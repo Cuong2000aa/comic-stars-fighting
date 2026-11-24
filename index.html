@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Đại Chiến Anh Hùng - Comic Stars Fighting 3.6 (Luffy, Goku, Zoro, Naruto, Bleach)</title>
+  <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      background: #000000;
+      color: #e0e0e0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+    header {
+      background: #0c0f14;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #1c212a;
+      z-index: 100;
+      transition: transform 0.3s ease;
+      flex-shrink: 0;
+    }
+    header.hidden-header {
+      transform: translateY(-100%);
+      position: absolute;
+      width: 100%;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .brand h1 {
+      font-size: 15px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #ff5722, #e91e63, #9c27b0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      white-space: nowrap;
+    }
+    .tag-badge {
+      font-size: 10px;
+      background: #ff572222;
+      color: #ff7043;
+      border: 1px solid #ff572255;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .controls-nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      background: #161b22;
+      color: #c9d1d9;
+      border: 1px solid #30363d;
+      padding: 6px 11px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .btn:hover {
+      background: #30363d;
+      color: #fff;
+    }
+    .btn.active {
+      background: #ff5722;
+      color: #fff;
+      font-weight: 700;
+      border-color: #ff5722;
+      box-shadow: 0 0 10px rgba(255, 87, 34, 0.5);
+    }
+    #game-wrapper {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      position: relative;
+      background: #000000;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #game-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    ruffle-player {
+      width: 100% !important;
+      height: 100% !important;
+      max-width: 100vw;
+      max-height: 100vh;
+      box-shadow: 0 0 20px rgba(0,0,0,0.8);
+      aspect-ratio: 16 / 9;
+    }
+    #float-toggle-btn {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(12, 15, 20, 0.7);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #8b949e;
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 11px;
+      z-index: 110;
+      cursor: pointer;
+      transition: opacity 0.2s, background 0.2s;
+      opacity: 0.35;
+    }
+    #float-toggle-btn:hover {
+      opacity: 1;
+      background: rgba(22, 27, 34, 0.95);
+      color: #fff;
+    }
+    #app-toast {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-30px);
+      background: rgba(22, 27, 34, 0.92);
+      border: 1px solid #30363d;
+      color: #58a6ff;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      pointer-events: none;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+      text-align: center;
+      max-width: 90%;
+    }
+    #app-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .virtual-controls {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 120;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 20px 24px;
+    }
+    .virtual-controls.hidden-overlay {
+      display: none !important;
+    }
+    .vpad-group {
+      pointer-events: auto;
+      display: flex;
+      position: relative;
+    }
+    .vpad-dpad {
+      width: 150px;
+      height: 150px;
+      position: relative;
+    }
+    .vbtn-dir {
+      position: absolute;
+      width: 46px;
+      height: 46px;
+      background: rgba(30, 35, 45, 0.65);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      color: #ffffff;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      backdrop-filter: blur(8px);
+      touch-action: none;
+    }
+    .vbtn-dir:active, .vbtn-dir.pressed {
+      background: rgba(255, 87, 34, 0.8);
+      border-color: #ff5722;
+      transform: scale(0.92);
+    }
+    .vbtn-up    { top: 0; left: 52px; }
+    .vbtn-down  { bottom: 0; left: 52px; }
+    .vbtn-left  { top: 52px; left: 0; }
+    .vbtn-right { top: 52px; right: 0; }
+    .vpad-actions {
+      display: grid;
+      grid-template-columns: repeat(3, 50px);
+      grid-template-rows: repeat(2, 50px);
+      gap: 10px;
+    }
+    .vbtn-act {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: rgba(30, 35, 45, 0.65);
+      border: 2px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      backdrop-filter: blur(8px);
+      touch-action: none;
+      line-height: 1.1;
+    }
+    .vbtn-act small {
+      font-size: 8px;
+      font-weight: 400;
+      opacity: 0.85;
+    }
+    .vbtn-act:active, .vbtn-act.pressed {
+      transform: scale(0.92);
+    }
+    .vbtn-j { border-color: #ff5722; background: rgba(255, 87, 34, 0.4); }
+    .vbtn-j:active, .vbtn-j.pressed { background: #ff5722; }
+    .vbtn-k { border-color: #4caf50; background: rgba(76, 175, 80, 0.4); }
+    .vbtn-k:active, .vbtn-k.pressed { background: #4caf50; }
+    .vbtn-l { border-color: #2196f3; background: rgba(33, 150, 243, 0.4); }
+    .vbtn-l:active, .vbtn-l.pressed { background: #2196f3; }
+    .vbtn-u { border-color: #9c27b0; background: rgba(156, 39, 176, 0.4); }
+    .vbtn-u:active, .vbtn-u.pressed { background: #9c27b0; }
+    .vbtn-i { border-color: #e91e63; background: rgba(233, 30, 99, 0.5); }
+    .vbtn-i:active, .vbtn-i.pressed { background: #e91e63; }
+    .vbtn-o { border-color: #00bcd4; background: rgba(0, 188, 212, 0.4); }
+    .vbtn-o:active, .vbtn-o.pressed { background: #00bcd4; }
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.84);
+      backdrop-filter: blur(6px);
+      z-index: 250;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal.show {
+      display: flex;
+    }
+    .modal-content {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 680px;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 20px;
+      color: #c9d1d9;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #30363d;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+    .modal-header h3 {
+      font-size: 16px;
+      color: #fff;
+    }
+    .close-btn {
+      background: none;
+      border: none;
+      color: #8b949e;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .key-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .player-box {
+      background: #0d1117;
+      border: 1px solid #21262d;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+    .player-title {
+      font-weight: 700;
+      color: #58a6ff;
+      margin-bottom: 8px;
+      border-bottom: 1px solid #21262d;
+      padding-bottom: 4px;
+    }
+    kbd {
+      background: #21262d;
+      border: 1px solid #30363d;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 11px;
+      font-family: inherit;
+      color: #f0f6fc;
+      box-shadow: inset 0 -1px 0 #0d1117;
+    }
+  </style>
+</head>
+<body>
+  <header id="main-header">
+    <div class="brand">
+      <h1 id="txt-title">Đại Chiến Anh Hùng (Comic Stars 3.6)</h1>
+      <span class="tag-badge" id="txt-badge">🔥 Luffy, Goku & Shonen Jump</span>
+    </div>
+
+    <div class="controls-nav">
+      <button id="btn-vpad" class="btn" onclick="toggleVirtualControls()">
+        <span id="txt-btn-vpad">🕹️ Nút Ảo (Tắt/Bật)</span>
+      </button>
+      <button class="btn" onclick="toggleModal(true)">
+        <span id="txt-btn-guide">⌨️ Nút & Tay Cầm</span>
+      </button>
+      <button class="btn" onclick="toggleFullscreen()">
+        <span id="txt-btn-fs">⛶ Toàn Màn Hình</span>
+      </button>
+      <button class="btn" style="border-color: #f0883e;" onclick="forceClearCacheAndReload()">
+        <span id="txt-btn-refresh">🔄 Xóa Cache & Cập Nhật</span>
+      </button>
+      <button class="btn" style="border-color: #58a6ff; font-weight: 700;" onclick="toggleLanguage()">
+        <span id="txt-btn-lang">🌐 Tiếng Việt</span>
+      </button>
+    </div>
+  </header>
+
+  <main id="game-wrapper">
+    <div id="float-toggle-btn" onclick="toggleHeader()">⚙️ Menu</div>
+    <div id="app-toast">🎮 Sẵn sàng chiến game!</div>
+
+    <div id="game-container"></div>
+
+    <div id="virtual-controls" class="virtual-controls hidden-overlay">
+      <div class="vpad-group">
+        <div class="vpad-dpad">
+          <button class="vbtn-dir vbtn-up" data-code="KeyW" data-key="w" data-kcode="87">▲</button>
+          <button class="vbtn-dir vbtn-left" data-code="KeyA" data-key="a" data-kcode="65">◀</button>
+          <button class="vbtn-dir vbtn-down" data-code="KeyS" data-key="s" data-kcode="83">▼</button>
+          <button class="vbtn-dir vbtn-right" data-code="KeyD" data-key="d" data-kcode="68">▶</button>
+        </div>
+      </div>
+
+      <div class="vpad-group">
+        <div class="vpad-actions">
+          <button class="vbtn-act vbtn-u" data-code="KeyU" data-key="u" data-kcode="85">U<small id="lbl-u">Chiêu 1</small></button>
+          <button class="vbtn-act vbtn-i" data-code="KeyI" data-key="i" data-kcode="73">I<small id="lbl-i">Ulti</small></button>
+          <button class="vbtn-act vbtn-o" data-code="KeyO" data-key="o" data-kcode="79">O<small id="lbl-o">Biến hình</small></button>
+          <button class="vbtn-act vbtn-j" data-code="KeyJ" data-key="j" data-kcode="74">J<small id="lbl-j">Đánh</small></button>
+          <button class="vbtn-act vbtn-k" data-code="KeyK" data-key="k" data-kcode="75">K<small id="lbl-k">Nhảy</small></button>
+          <button class="vbtn-act vbtn-l" data-code="KeyL" data-key="l" data-kcode="76">L<small id="lbl-l">Lướt</small></button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="guide-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="txt-modal-title">🎮 Hướng Dẫn Điều Khiển (RG557 & Bàn Phím)</h3>
+        <button class="close-btn" onclick="toggleModal(false)">&times;</button>
+      </div>
+
+      <div class="key-grid">
+        <div class="player-box handheld-box">
+          <div class="player-title" id="txt-box-handheld" style="color: #3fb950;">🎮 Anbernic RG557 / Tay Cầm</div>
+          <div id="txt-hh-move">Di chuyển: <kbd>D-Pad</kbd> hoặc <kbd>Cần Analog Trái</kbd></div>
+          <div id="txt-hh-atk">Đánh thường (J): <kbd>Nút A</kbd></div>
+          <div id="txt-hh-jump">Nhảy (K): <kbd>Nút B</kbd></div>
+          <div id="txt-hh-s1">Chiêu phụ (U): <kbd>Nút X</kbd></div>
+          <div id="txt-hh-ulti">Tuyệt chiêu Ulti (I): <kbd>Nút Y</kbd></div>
+          <div id="txt-hh-dash">Lướt / Dash (L): <kbd>Cò R1 (RB)</kbd></div>
+          <div id="txt-hh-assist">Biến hình Siêu Saiyan/Bankai/Gear (O): <kbd>Cò L1 (LB)</kbd></div>
+          <div id="txt-hh-start">Bắt đầu / Chọn: <kbd>Start</kbd> / <kbd>Nút A</kbd></div>
+          <div id="txt-hh-select">Thoát / Menu: <kbd>Select</kbd></div>
+        </div>
+
+        <div class="player-box">
+          <div class="player-title" id="txt-box-p1">👤 Bàn Phím 1 (P1)</div>
+          <div id="txt-p1-move">Di chuyển: <kbd>A</kbd> <kbd>D</kbd></div>
+          <div id="txt-p1-jump">Nhảy / Ngồi: <kbd>W</kbd> / <kbd>S</kbd></div>
+          <div id="txt-p1-atk">Tấn công: <kbd>J</kbd></div>
+          <div id="txt-p1-hjump">Nhảy cao: <kbd>K</kbd></div>
+          <div id="txt-p1-dash">Lướt (Dash): <kbd>L</kbd></div>
+          <div id="txt-p1-s1">Chiêu phụ: <kbd>U</kbd></div>
+          <div id="txt-p1-ulti">Tuyệt chiêu: <kbd>I</kbd></div>
+          <div id="txt-p1-assist">Biến hình: <kbd>O</kbd></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const BUILD_VERSION = "2026.11.24_rev1";
+
+    let ruffleInstance = null;
+    let player = null;
+    let headerVisible = true;
+    let virtualControlsEnabled = false;
+    let currentLang = localStorage.getItem("comic_lang") || "vi";
+
+    const I18N = {
+      vi: {
+        title: "Đại Chiến Anh Hùng (Comic Stars 3.6)",
+        badge: "🔥 Luffy, Goku & Shonen Jump",
+        btnVpad: "🕹️ Nút Ảo (Tắt/Bật)",
+        btnGuide: "⌨️ Nút & Tay Cầm",
+        btnFs: "⛶ Toàn Màn Hình",
+        btnRefresh: "🔄 Xóa Cache & Cập Nhật",
+        btnLang: "🌐 Tiếng Việt",
+        toastReady: "🎮 Sẵn sàng chiến game!",
+        toastGp: "🎮 Tay cầm đã kết nối: ",
+        toastCache: "🔄 Đã tự động cập nhật bản mới nhất và xóa cache cũ!",
+        modalTitle: "🎮 Hướng Dẫn Điều Khiển (RG557 & Bàn Phím)",
+        boxHandheld: "🎮 Anbernic RG557 / Tay Cầm",
+        hhMove: "Di chuyển: <kbd>D-Pad</kbd> hoặc <kbd>Cần Analog Trái</kbd>",
+        hhAtk: "Đánh thường (J): <kbd>Nút A</kbd>",
+        hhJump: "Nhảy (K): <kbd>Nút B</kbd>",
+        hhS1: "Chiêu phụ (U): <kbd>Nút X</kbd>",
+        hhUlti: "Tuyệt chiêu Ulti (I): <kbd>Nút Y</kbd>",
+        hhDash: "Lướt / Dash (L): <kbd>Cò R1 (RB)</kbd>",
+        hhAssist: "Biến hình Siêu Saiyan/Bankai/Gear (O): <kbd>Cò L1 (LB)</kbd>",
+        hhStart: "Bắt đầu / Chọn: <kbd>Start</kbd> / <kbd>Nút A</kbd>",
+        hhSelect: "Thoát / Menu: <kbd>Select</kbd>",
+        boxP1: "👤 Bàn Phím 1 (P1)",
+        p1Move: "Di chuyển: <kbd>A</kbd> <kbd>D</kbd>",
+        p1Jump: "Nhảy / Ngồi: <kbd>W</kbd> / <kbd>S</kbd>",
+        p1Atk: "Tấn công: <kbd>J</kbd>",
+        p1Hjump: "Nhảy cao: <kbd>K</kbd>",
+        p1Dash: "Lướt (Dash): <kbd>L</kbd>",
+        p1S1: "Chiêu phụ: <kbd>U</kbd>",
+        p1Ulti: "Tuyệt chiêu: <kbd>I</kbd>",
+        p1Assist: "Biến hình: <kbd>O</kbd>",
+        lblU: "Chiêu 1",
+        lblI: "Ulti",
+        lblO: "Biến hình",
+        lblJ: "Đánh",
+        lblK: "Nhảy",
+        lblL: "Lướt"
+      },
+      en: {
+        title: "Comic Stars Fighting 3.6 (All-Stars)",
+        badge: "🔥 Luffy, Goku & Shonen Jump",
+        btnVpad: "🕹️ Virtual Pad (On/Off)",
+        btnGuide: "⌨️ Controls & Gamepad",
+        btnFs: "⛶ Fullscreen",
+        btnRefresh: "🔄 Clear Cache & Update",
+        btnLang: "🌐 English",
+        toastReady: "🎮 Ready to fight!",
+        toastGp: "🎮 Gamepad Connected: ",
+        toastCache: "🔄 Automatically updated to latest version and cleared cache!",
+        modalTitle: "🎮 Control Guide (RG557 & Keyboard)",
+        boxHandheld: "🎮 Anbernic RG557 / Gamepad",
+        hhMove: "Movement: <kbd>D-Pad</kbd> or <kbd>Left Stick</kbd>",
+        hhAtk: "Normal Attack (J): <kbd>A Button</kbd>",
+        hhJump: "Jump (K): <kbd>B Button</kbd>",
+        hhS1: "Sub Skill (U): <kbd>X Button</kbd>",
+        hhUlti: "Ultimate Skill (I): <kbd>Y Button</kbd>",
+        hhDash: "Dash / Teleport (L): <kbd>R1 (RB)</kbd>",
+        hhAssist: "Transform / Super Saiyan (O): <kbd>L1 (LB)</kbd>",
+        hhStart: "Start / Select: <kbd>Start</kbd> / <kbd>A Button</kbd>",
+        hhSelect: "Exit / Menu: <kbd>Select</kbd>",
+        boxP1: "👤 Keyboard 1 (P1)",
+        p1Move: "Move: <kbd>A</kbd> <kbd>D</kbd>",
+        p1Jump: "Jump / Crouch: <kbd>W</kbd> / <kbd>S</kbd>",
+        p1Atk: "Attack: <kbd>J</kbd>",
+        p1Hjump: "High Jump: <kbd>K</kbd>",
+        p1Dash: "Dash: <kbd>L</kbd>",
+        p1S1: "Skill 1: <kbd>U</kbd>",
+        p1Ulti: "Ultimate: <kbd>I</kbd>",
+        p1Assist: "Transform: <kbd>O</kbd>",
+        lblU: "Skill 1",
+        lblI: "Ultimate",
+        lblO: "Transform",
+        lblJ: "Attack",
+        lblK: "Jump",
+        lblL: "Dash"
+      }
+    };
+
+    function applyLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem("comic_lang", lang);
+      const dict = I18N[lang];
+      if (!dict) return;
+
+      document.getElementById("txt-title").innerText = dict.title;
+      document.getElementById("txt-badge").innerText = dict.badge;
+      document.getElementById("txt-btn-vpad").innerText = dict.btnVpad;
+      document.getElementById("txt-btn-guide").innerText = dict.btnGuide;
+      document.getElementById("txt-btn-fs").innerText = dict.btnFs;
+      document.getElementById("txt-btn-refresh").innerText = dict.btnRefresh;
+      document.getElementById("txt-btn-lang").innerText = dict.btnLang;
+
+      document.getElementById("lbl-u").innerText = dict.lblU;
+      document.getElementById("lbl-i").innerText = dict.lblI;
+      document.getElementById("lbl-o").innerText = dict.lblO;
+      document.getElementById("lbl-j").innerText = dict.lblJ;
+      document.getElementById("lbl-k").innerText = dict.lblK;
+      document.getElementById("lbl-l").innerText = dict.lblL;
+    }
+
+    function toggleLanguage() {
+      applyLanguage(currentLang === "vi" ? "en" : "vi");
+    }
+
+    function checkAutoCacheBusting() {
+      const storedVer = localStorage.getItem("comic_build_version");
+      if (storedVer && storedVer !== BUILD_VERSION) {
+        localStorage.setItem("comic_build_version", BUILD_VERSION);
+        if ('caches' in window) {
+          caches.keys().then(names => {
+            names.forEach(name => caches.delete(name));
+          });
+        }
+        showToast(I18N[currentLang]?.toastCache || "🔄 Đã tự động cập nhật bản mới!");
+      } else {
+        localStorage.setItem("comic_build_version", BUILD_VERSION);
+      }
+    }
+
+    function forceClearCacheAndReload() {
+      if ('caches' in window) {
+        caches.keys().then(names => {
+          names.forEach(name => caches.delete(name));
+        });
+      }
+      localStorage.setItem("comic_build_version", BUILD_VERSION);
+      sessionStorage.clear();
+      showToast("🔄 Đang xóa cache và tải lại dữ liệu mới nhất...");
+      setTimeout(() => {
+        window.location.href = window.location.pathname + '?ts=' + Date.now();
+      }, 500);
+    }
+
+    function dispatchKey(type, code, key, keyCode) {
+      const target = player || window;
+      const evt = new KeyboardEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        key: key,
+        code: code,
+        keyCode: keyCode,
+        which: keyCode
+      });
+      if (player) player.dispatchEvent(evt);
+      window.dispatchEvent(evt);
+      document.dispatchEvent(evt);
+    }
+
+    const GAMEPAD_BUTTON_MAP = {
+      0: { code: 'KeyJ', key: 'j', keyCode: 74 },
+      1: { code: 'KeyK', key: 'k', keyCode: 75 },
+      2: { code: 'KeyU', key: 'u', keyCode: 85 },
+      3: { code: 'KeyI', key: 'i', keyCode: 73 },
+      4: { code: 'KeyO', key: 'o', keyCode: 79 },
+      5: { code: 'KeyL', key: 'l', keyCode: 76 },
+      8: { code: 'Escape', key: 'Escape', keyCode: 27 },
+      9: { code: 'Enter', key: 'Enter', keyCode: 13 },
+      12: { code: 'KeyW', key: 'w', keyCode: 87 },
+      13: { code: 'KeyS', key: 's', keyCode: 83 },
+      14: { code: 'KeyA', key: 'a', keyCode: 65 },
+      15: { code: 'KeyD', key: 'd', keyCode: 68 }
+    };
+
+    const gpState = {};
+
+    function pollGamepad() {
+      const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+      let activeGp = null;
+      for (let i = 0; i < gamepads.length; i++) {
+        if (gamepads[i] && gamepads[i].connected) {
+          activeGp = gamepads[i];
+          break;
+        }
+      }
+
+      if (activeGp) {
+        for (const [btnIdx, map] of Object.entries(GAMEPAD_BUTTON_MAP)) {
+          const pressed = activeGp.buttons[btnIdx] && activeGp.buttons[btnIdx].pressed;
+          const wasPressed = gpState[btnIdx] || false;
+          if (pressed && !wasPressed) {
+            gpState[btnIdx] = true;
+            dispatchKey('keydown', map.code, map.key, map.keyCode);
+            if (activeGp.vibrationActuator && [2, 3].includes(Number(btnIdx))) {
+              activeGp.vibrationActuator.playEffect('dual-rumble', {
+                startDelay: 0,
+                duration: 100,
+                weakMagnitude: 0.8,
+                strongMagnitude: 0.5
+              }).catch(() => {});
+            }
+          } else if (!pressed && wasPressed) {
+            gpState[btnIdx] = false;
+            dispatchKey('keyup', map.code, map.key, map.keyCode);
+          }
+        }
+
+        const DEADZONE = 0.35;
+        const axisX = activeGp.axes[0] || 0;
+        const axisY = activeGp.axes[1] || 0;
+
+        const stickLeft = axisX < -DEADZONE;
+        const stickRight = axisX > DEADZONE;
+        if (stickLeft && !gpState.stickLeft) {
+          gpState.stickLeft = true;
+          dispatchKey('keydown', 'KeyA', 'a', 65);
+        } else if (!stickLeft && gpState.stickLeft) {
+          gpState.stickLeft = false;
+          dispatchKey('keyup', 'KeyA', 'a', 65);
+        }
+        if (stickRight && !gpState.stickRight) {
+          gpState.stickRight = true;
+          dispatchKey('keydown', 'KeyD', 'd', 68);
+        } else if (!stickRight && gpState.stickRight) {
+          gpState.stickRight = false;
+          dispatchKey('keyup', 'KeyD', 'd', 68);
+        }
+
+        const stickUp = axisY < -DEADZONE;
+        const stickDown = axisY > DEADZONE;
+        if (stickUp && !gpState.stickUp) {
+          gpState.stickUp = true;
+          dispatchKey('keydown', 'KeyW', 'w', 87);
+        } else if (!stickUp && gpState.stickUp) {
+          gpState.stickUp = false;
+          dispatchKey('keyup', 'KeyW', 'w', 87);
+        }
+        if (stickDown && !gpState.stickDown) {
+          gpState.stickDown = true;
+          dispatchKey('keydown', 'KeyS', 's', 83);
+        } else if (!stickDown && gpState.stickDown) {
+          gpState.stickDown = false;
+          dispatchKey('keyup', 'KeyS', 's', 83);
+        }
+      }
+
+      requestAnimationFrame(pollGamepad);
+    }
+
+    window.addEventListener("gamepadconnected", (e) => {
+      showToast(`${I18N[currentLang]?.toastGp || '🎮 '}${e.gamepad.id.substring(0, 22)}...`);
+    });
+
+    function showToast(msg) {
+      const toast = document.getElementById("app-toast");
+      if (!toast) return;
+      toast.innerText = msg;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 4000);
+    }
+
+    function setupVirtualControls() {
+      const btns = document.querySelectorAll(".virtual-controls button");
+      btns.forEach(btn => {
+        const code = btn.dataset.code;
+        const key = btn.dataset.key;
+        const keyCode = parseInt(btn.dataset.kcode, 10);
+
+        const onStart = (e) => {
+          e.preventDefault();
+          btn.classList.add("pressed");
+          dispatchKey("keydown", code, key, keyCode);
+          if (navigator.vibrate) navigator.vibrate(20);
+        };
+        const onEnd = (e) => {
+          e.preventDefault();
+          btn.classList.remove("pressed");
+          dispatchKey("keyup", code, key, keyCode);
+        };
+
+        btn.addEventListener("touchstart", onStart, { passive: false });
+        btn.addEventListener("touchend", onEnd, { passive: false });
+        btn.addEventListener("touchcancel", onEnd, { passive: false });
+        btn.addEventListener("mousedown", onStart);
+        btn.addEventListener("mouseup", onEnd);
+        btn.addEventListener("mouseleave", onEnd);
+      });
+    }
+
+    function toggleVirtualControls() {
+      const vpad = document.getElementById("virtual-controls");
+      const btn = document.getElementById("btn-vpad");
+      virtualControlsEnabled = !virtualControlsEnabled;
+      if (virtualControlsEnabled) {
+        vpad.classList.remove("hidden-overlay");
+        btn.classList.add("active");
+      } else {
+        vpad.classList.add("hidden-overlay");
+        btn.classList.remove("active");
+      }
+    }
+
+    function toggleHeader() {
+      const header = document.getElementById("main-header");
+      headerVisible = !headerVisible;
+      if (headerVisible) header.classList.remove("hidden-header");
+      else header.classList.add("hidden-header");
+    }
+
+    function loadComicStarsGame() {
+      const container = document.getElementById("game-container");
+      container.innerHTML = "";
+
+      if (!ruffleInstance) return;
+
+      player = ruffleInstance.createPlayer();
+      player.style.width = "100%";
+      player.style.height = "100%";
+      container.appendChild(player);
+
+      player.load({
+        url: `comic_stars.swf?v=${BUILD_VERSION}`,
+        base: ".",
+        allowScriptAccess: true,
+        letterbox: "on",
+        autoplay: "on"
+      });
+    }
+
+    function toggleFullscreen() {
+      const elem = document.getElementById("game-wrapper");
+      if (!document.fullscreenElement) {
+        elem.requestFullscreen().catch(err => alert("Fullscreen error: " + err.message));
+        const header = document.getElementById("main-header");
+        header.classList.add("hidden-header");
+        headerVisible = false;
+      } else {
+        document.exitFullscreen();
+        const header = document.getElementById("main-header");
+        header.classList.remove("hidden-header");
+        headerVisible = true;
+      }
+    }
+
+    function toggleModal(show) {
+      const modal = document.getElementById("guide-modal");
+      if (show) modal.classList.add("show");
+      else modal.classList.remove("show");
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      checkAutoCacheBusting();
+      applyLanguage(currentLang);
+
+      window.RufflePlayer = window.RufflePlayer || {};
+      const ruffle = window.RufflePlayer.newest();
+      ruffleInstance = ruffle;
+
+      loadComicStarsGame();
+      setupVirtualControls();
+      requestAnimationFrame(pollGamepad);
+    });
+  </script>
+</body>
+</html>
